@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 import os
+from typing import cast
+from bs4.element import Tag
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 import requests
@@ -10,6 +12,17 @@ import time
 class CarBrand:
     logo: str | None
     name: str
+
+def extract_logo_url(html_link: Tag) -> str | None:
+    style = html_link.get('style')
+    if not style:
+        return None
+    
+    match = re.search(r"background-image:\s*url\(['\"]?(.*?)['\"]?\)", str(style))
+    if match:
+        return match.group(1)
+    else:
+        return None
     
 load_dotenv()
 url = os.getenv("SITE_URL")
@@ -48,21 +61,10 @@ while True:
     car_brands_html = soup.select('div.brand_item')
 
     for brand_html in car_brands_html:
-        def extract_logo_url(html_link):
-            style = html_link.get('style')
-            if not style:
-                return None
-            
-            match = re.search(r"background-image:\s*url\(['\"]?(.*?)['\"]?\)", style)
-            if match:
-                return match.group(1)
-            else:
-                return None
-    
         contents = brand_html.find_all("a")
 
         if len(contents) == 2:
-            logo = extract_logo_url(contents[0])
+            logo = extract_logo_url(cast(Tag, contents[0]))
             name = contents[1].get_text(strip=True)
         else:
             logo = None
