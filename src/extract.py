@@ -8,7 +8,7 @@ import time
 
 @dataclass
 class CarBrand:
-    logo: str
+    logo: str | None
     name: str
     
 load_dotenv()
@@ -29,6 +29,9 @@ car_brands = []
 
 while True:
     print(f"Fetching page {params['page']}")
+    if url is None:
+        print("SITE_URL is not set in the environment variables.")
+        break
     response = requests.get(url, params = params, headers = headers)
 
     if response.status_code != 200:
@@ -60,13 +63,15 @@ while True:
 
         if len(contents) == 2:
             logo = extract_logo_url(contents[0])
-            name = contents[1].string
+            name = contents[1].get_text(strip=True)
         else:
             logo = None
-            name = contents[0].string
-        
+            name = contents[0].get_text(strip=True)
+
         print(logo, name)
         car_brands.append(CarBrand(logo=logo, name=name))
     
     params["page"] += 1
     time.sleep(2)
+
+print("Exit program.")
