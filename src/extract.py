@@ -32,7 +32,7 @@ if url is None:
     exit(1)
 
 params = {
-    "page": 12,
+    "page": 0,
     "search_text": "",
     "order": "owner_count",
     "view": "list_cards"
